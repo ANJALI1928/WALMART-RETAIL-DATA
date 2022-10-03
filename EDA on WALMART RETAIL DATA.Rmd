@@ -1,0 +1,206 @@
+---
+title: "EDA ON WALMART DATASET"
+author: "TEAM PROJECT"
+date: "2022-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(readxl)
+library(RColorBrewer)
+library(ggplot2)
+getwd()
+data = read_excel("Walmart Retail Dataset.xlsx")
+View(data)
+str(data)
+head(data)
+```
+
+```{r}
+data$`Customer Age`[is.na(data$`Customer Age`)]= mean(data$`Customer Age`,na.rm = T)
+data$`Product Base Margin`[is.na(data$`Product Base Margin`)]=mean(data$`Product Base Margin`,na.rm = T)
+View(data)
+```
+
+## CUSTOMER SEGMENT
+```{r}
+CS_OP =table(data$`Customer Segment`,data$`Order Priority`)
+summary(CS_OP)
+CS_PSC = table(data$`Customer Segment`,data$`Product Sub-Category`)
+summary(CS_PSC)
+CS_PSC
+CS_PC = table(data$`Customer Segment`,data$`Product Category`)
+summary(CS_PC)
+CS_SM = table(data$`Customer Segment`,data$`Ship Mode`)
+summary(CS_SM)
+CS_REGION = table(data$`Customer Segment`,data$Region)
+summary(CS_REGION)
+```
+
+**Performed chi-sq test between Customer Segment and other variables.**
+**Inference drawn is that all the fields are independent.**
+
+
+## ORDER_PRIORITY
+```{r}
+OP_PC = table(data$`Order Priority`,data$`Product Category`)
+summary(OP_PC)
+OP_PCon = table(data$`Order Priority`,data$`Product Container`)
+summary(OP_PCon)
+OP_PSC = table(data$`Order Priority`,data$`Product Sub-Category`)
+summary(OP_PSC)
+OP_SM = table(data$`Order Priority`,data$`Ship Mode`)
+summary(OP_SM)
+OP_REGION = table(data$`Order Priority`,data$Region)
+summary(OP_REGION)
+```
+
+**Inference drawn is that all the fields are independent.**
+
+
+## PRODUCT CATEGORY
+```{r}
+PC_PCon = table(data$`Product Category`,data$`Product Container`)
+summary(PC_PCon)
+PC_PSC = table(data$`Product Category`,data$`Product Sub-Category`)
+summary(PC_PSC)
+PC_SM = table(data$`Product Category`,data$`Ship Mode`)
+summary(PC_SM)
+PC_REGION = table(data$`Product Category`,data$Region)
+summary(PC_REGION)
+```
+
+**Inference : The first three variables are dependent while region is independent of field product category.**
+
+
+## PRODUCT CONTAINER
+```{r}
+PCON_PSC = table(data$`Product Container`,data$`Product Sub-Category`)
+summary(PCON_PSC)
+PCON_REGION = table(data$`Product Container`,data$Region)
+summary(PCON_REGION)
+PCON_SM = table(data$`Product Container`,data$`Ship Mode`)
+summary(PCON_SM)
+```
+
+**Inference : Fields are dependent of each other.**
+
+
+## PRODUCT SUB-CATEGORY
+```{r}
+PSC_REGION = table(data$`Product Sub-Category`,data$Region)
+summary(PSC_REGION)
+PSC_SM = table(data$`Product Sub-Category`,data$`Ship Mode`)
+summary(PSC_SM)
+SM_REGION = table(data$`Ship Mode`,data$Region)
+summary(SM_REGION)
+```
+
+**Inference : Fields are independent of each other.**
+
+
+## CORRELATION_TEST
+## SALES
+```{r}
+cor(data$Sales,data$Discount)
+cor(data$Sales,data$`Order Quantity`)
+cor(data$Sales,data$Profit)
+cor(data$Sales,data$`Shipping Cost`)
+cor(data$Sales,data$`Product Base Margin`)
+```
+
+**Inference : Discount is slightly negative correlated whlie other variables are slightly positive correlated.**
+
+
+## PROFIT
+```{r}
+cor(data$Profit,data$Discount)
+cor(data$Profit,data$Sales)
+cor(data$Profit,data$`Shipping Cost`)
+```
+
+**Inference : Sales and Profit are dependent on each other.**
+
+
+## ORDER QUANTITY
+```{r}
+cor(data$`Order Quantity`,data$Discount)
+cor(data$`Order Quantity`,data$Profit)
+cor(data$`Order Quantity`,data$Sales)
+cor(data$`Order Quantity`,data$`Shipping Cost`)
+```
+
+**Inference : Profit and Sales are dependent on Order Quantity.**
+
+
+## DATA VISUALIZATION
+```{r}
+barplot(table(data$`Order Quantity`),col = "SKYBLUE",border = "WHITE",xlab = "ORDER QUANTITY",ylab = "Frequency of Order Quantity")
+barplot(table(data$`Customer Segment`),col = "steelblue",border = "black",xlab = "Customer Segment",ylab = "Frequency")
+barplot(table(data$Discount),col = rainbow(18),xlab = "Discount",ylab = "Frequency of Discount")
+barplot(table(data$`Order Priority`),col = brewer.pal(5,"Dark2"),xlab = "Order Priority",ylab = "Frequncy of Order Priority")
+```
+
+```{r}
+barplot(table(data$`Product Base Margin`),col=brewer.pal(5,"Paired"),xlab = "Product Base Margin",ylab = "Frequency of PBM")
+barplot(table(data$`Product Category`),col = brewer.pal(5,"Blues"),xlab = "Product Category",ylab = "Frequency of Product Category")
+barplot(table(data$`Product Sub-Category`),col = brewer.pal(6,"PRGn"),xlab = "Product Sub-Category",ylab = "Frequency of PSC")
+```
+
+```{r}
+ggplot(data = data,aes(y = `Product Base Margin`,x = `Product Category`))+geom_point(col=2)
+```
+
+**Inference : Product Base Margin for the office supplies is higher followed by Technology and Furniture.**
+
+```{r}
+ggplot(data = data,aes(y = `Sales`,x = `Product Sub-Category`))+geom_point(col=7)+
+theme(axis.text.x=element_text(size=15, angle=90,hjust=0.95,vjust=0.2))+
+  coord_flip()
+
+```
+
+**Inference : Sales for Office Machines is higher which lies under office supplies category followed by Copiers and Fax, Bookcases and so on.**
+
+
+```{r}
+ggplot(data = data,aes(y = `Profit`,x =`Region`))+ geom_area(col="purple")
+```
+
+**Inference : Central region has the highest profit followed by west, south and east.**
+
+
+```{r}
+ggplot(data = data,aes(y = `Profit`,x = `Ship Mode`))+geom_point(col="blue")+coord_flip()
+```
+
+**Inference : Profit for the Regular Air is higher followed by Delivery truck and Express air.**
+
+
+```{r}
+ggplot(data = data,aes(y = `Shipping Cost`,x = `Region`))+ geom_boxplot(fill="orange",col="red")
+```
+
+**Inference : For central region shippinmg cost is higher whereas for the south region it is lowest.**
+
+
+```{r}
+ggplot(data = data,aes(y = `Profit`,x = `Product Container`))+geom_polygon(col = "darkgreen")
+```
+
+**Inference : Profit for the Large Box is highest, followed by jumbo drum, small box, jumbo box and so on.**
+
+
+```{r}
+ggplot(data = data,aes(y = `Shipping Cost`,x = `Order Priority`))+geom_point(col="brown")+
+  coord_flip()
+```
+
+**Inference : As per the Order priority the shipping cost also varies, it is highest for critical and lowest for medium.**
+
+
